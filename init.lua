@@ -679,7 +679,7 @@ require('lazy').setup({
             },
           },
         },
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -704,6 +704,7 @@ require('lazy').setup({
             },
           },
         },
+        jsonls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -787,6 +788,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         python = { 'isort', 'black' },
         json = { 'prettier' },
+
         go = { 'gofmt', 'goimports' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
@@ -986,8 +988,11 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   -- Basic Plugins (default in kickstart nvim)
   require 'kickstart.plugins.indent_line',
-  require 'kickstart.plugins.lint',
+  -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  -- godot
+  require 'custom.plugins.godot',
+  -- require 'custom.plugins.godot-lsp', (this plugin does not work...)
   -- vim-tmux navigation
   require 'custom.plugins.vim-tmux-navigator',
   require 'custom.plugins.vim-tmux-runner',
@@ -1030,3 +1035,6 @@ require('lazy').setup({
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
 vim.cmd 'colorscheme nightfox'
+-- but this work for now to enable gdscript lsp
+vim.lsp.config('gdscript', {})
+vim.lsp.enable 'gdscript'

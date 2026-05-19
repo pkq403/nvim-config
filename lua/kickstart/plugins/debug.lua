@@ -73,7 +73,18 @@ return {
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
-
+    -- Python Configuration
+    dap.configurations.python = {
+      {
+        type = 'debugpy',
+        request = 'launch',
+        name = 'Launch file with args',
+        program = '${file}',
+        pythonPath = function()
+          return 'python3'
+        end,
+      },
+    }
     require('mason-nvim-dap').setup {
       -- Makes a best effort to setup the various debuggers with
       -- reasonable debug configurations
