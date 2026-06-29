@@ -1,16 +1,9 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
--- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
--- [[ Setting options ]]
--- See `:help vim.opt`
-
--- Make line numbers default
 --vim.opt.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
 vim.opt.number = true
 vim.opt.tabstop = 4
@@ -20,6 +13,7 @@ vim.opt.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
+vim.opt.termguicolors = true
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
@@ -69,7 +63,7 @@ vim.opt.scrolloff = 10
 
 -- [[ Custom Keymaps ]]
 vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
-
+vim.api.nvim_set_keymap('n', '<leader>cd', '<cmd>cd %:p:h<cr><cmd>pwd<cr>', { desc = "Change CWD to current file's directory" })
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -648,8 +642,6 @@ require('lazy').setup({
           end
         end,
       })
-
-      -- Change diagnostic symbols in the sign column (gutter)
       if vim.g.have_nerd_font then
         local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
         local diagnostic_signs = {}
@@ -658,25 +650,10 @@ require('lazy').setup({
         end
         vim.diagnostic.config { signs = { text = diagnostic_signs } }
       end
-
-      -- LSP servers and clients are able to communicate to each other what features they support.
-      --  By default, Neovim doesn't support everything that is in the LSP specification.
-      --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
-      --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
-      -- Enable the following language servers
-      --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
-      --
-      --  Add any additional override configuration in the following tables. Available keys are:
-      --  - cmd (table): Override the default command used to start the server
-      --  - filetypes (table): Override the default list of associated filetypes for the server
-      --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-      --  - settings (table): Override the default settings passed when initializing the server.
-      --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      capabilities.positionEncoding = 'utf-16'
       local servers = {
-        -- clangd = {},
         gopls = {
           cmd = { 'gopls' },
           filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
@@ -692,45 +669,22 @@ require('lazy').setup({
           },
         },
         pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-
         lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
           settings = {
             Lua = {
               completion = {
                 callSnippet = 'Replace',
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
         jsonls = {},
+        cssls = {},
+        html = {},
+        ts_ls = {},
+        astro = {},
       }
 
-      -- Ensure the servers and tools above are installed
-      --
-      -- To check the current status of installed tools and/or manually install
-      -- other tools, you can run
-      --    :Mason
-      --
-      -- You can press `g?` for help in this menu.
-      --
-      -- `mason` had to be setup earlier: to configure its options see the
-      -- `dependencies` table for `nvim-lspconfig` above.
-      --
-      -- You can add other tools here that you want Mason to install
-      -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
@@ -741,9 +695,6 @@ require('lazy').setup({
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
@@ -811,29 +762,15 @@ require('lazy').setup({
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
     dependencies = {
-      -- Snippet Engine & its associated nvim-cmp source
       {
         'L3MON4D3/LuaSnip',
         build = (function()
-          -- Build Step is needed for regex support in snippets.
-          -- This step is not supported in many windows environments.
-          -- Remove the below condition to re-enable on windows.
           if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
             return
           end
           return 'make install_jsregexp'
         end)(),
-        dependencies = {
-          -- `friendly-snippets` contains a variety of premade snippets.
-          --    See the README about individual language/framework/plugin snippets:
-          --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
-        },
+        dependencies = {},
       },
       'saadparwaiz1/cmp_luasnip',
 
@@ -958,69 +895,41 @@ require('lazy').setup({
       statusline.section_location = function()
         return '%2l:%-2v'
       end
-
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  { -- Highlight, edit, and navigate code
+  {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+    main = 'nvim-treesitter.configs',
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
         enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    -- There are additional nvim-treesitter modules that you can use to interact
-    -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
 
-  -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
-  -- init.lua. If you want these files, they are in the repository, so you can just download them and
-  -- place them in the correct locations.
-
-  -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
-  --
-  --  Here are some example plugins that I've included in the Kickstart repository.
-  --  Uncomment any of the lines below to enable them (you will need to restart nvim).
-  -- Basic Plugins (default in kickstart nvim)
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
-  -- godot
   require 'custom.plugins.godot',
-  -- require 'custom.plugins.godot-lsp', (this plugin does not work...)
-  -- vim-tmux navigation
+  require 'custom.plugins.colorizer',
+  require 'custom.plugins.tabout',
+  require 'kickstart.plugins.autopairs',
+  require 'custom.plugins.unimpaired',
+  require 'kickstart.plugins.debug',
   require 'custom.plugins.vim-tmux-navigator',
   require 'custom.plugins.vim-tmux-runner',
-  -- text-objects
-  require 'custom.plugins.treesitter-text-objects',
-  -- Themes
+  require 'custom.plugins.flash',
+  require 'custom.plugins.vim-tpipeline',
+  require 'custom.plugins.nvim-ts-autotag',
+  -- require 'custom.plugins.treesitter-text-objects',
   require 'custom.plugins.themes',
-  -- AI plugins
+
   require 'custom.plugins.copilot',
   require 'custom.plugins.opencode',
-  -- QoL Plugins
-  require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.debug',
-  -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
-  -- Or use telescope!
-  -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
-  -- you can continue same window with `<space>sr` which resumes last telescope search
 }, {
 
   ui = {
