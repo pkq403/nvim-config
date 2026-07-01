@@ -4,9 +4,7 @@ return {
     opts = {
       bold = false,
     },
-    {
-      'gmr458/cold.nvim',
-    },
   },
+  { 'gmr458/cold.nvim' },
   { 'EdenEast/nightfox.nvim' },
 }
