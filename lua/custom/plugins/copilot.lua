@@ -48,8 +48,8 @@ return {
         enabled = true, -- requires copilot-lsp as a dependency
         auto_trigger = false,
         keymap = {
-          accept_and_goto = '<M-1>',
-          accept = '<M-2>',
+          --accept_and_goto = '<C-S-L>',
+          accept = '<C-S-L>',
           dismiss = false,
         },
       },
@@ -79,6 +79,6 @@ return {
       server_opts_overrides = {},
     }
     vim.notify('copilot setup donw', vim.log.levels.INFO, { title = 'copilot.lua' })
-    vim.notify(vim.inspect(vim.fn.maparg('<M-l>', 'i', false, true)), vim.log.levels.INFO)
+    vim.notify(vim.inspect(vim.fn.maparg('<C-A-l>', 'i', false, true)), vim.log.levels.INFO)
   end,
 }

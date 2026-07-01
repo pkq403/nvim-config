@@ -75,6 +75,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 vim.keymap.set('n', '<leader>z', '<cmd>cd %:p:h<CR>', { desc = 'Set CWD to Current File directory' })
+
+--  Barbar Buffer tabs keymaps
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -900,7 +902,7 @@ require('lazy').setup({
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs',
+    main = 'nvim-treesitter.config', -- Sets main module to use for opts
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       auto_install = true,
@@ -930,6 +932,7 @@ require('lazy').setup({
 
   require 'custom.plugins.copilot',
   require 'custom.plugins.opencode',
+  require 'custom.plugins.barbar',
 }, {
 
   ui = {
